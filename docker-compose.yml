@@ -1,0 +1,16 @@
+version: '3'
+services:
+  tornStocks:
+    container_name: imdbscrapper
+    image: zebrajr/imdbscrapper:latest
+    #ports:
+    #  - '80:8080'
+    #  - '443:8443'
+    volumes:
+    - '${PWD}/src:/opt/imdbscrapper:ro'
+
+  #web:
+  #  build: .
+  #  command: python manage.py runserver 0.0.0.0:8000
+  #  ports:
+  #    - "8000:8000"
