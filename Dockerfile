@@ -1,5 +1,6 @@
 FROM python:3.9-alpine3.13
 
+RUN mkdir /opt/storage
 WORKDIR /opt/imdbscrapper
 
 COPY requirements.txt ./
