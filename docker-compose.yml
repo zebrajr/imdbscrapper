@@ -3,11 +3,13 @@ services:
   tornStocks:
     container_name: imdbscrapper
     image: zebrajr/imdbscrapper:latest
+    volumes:
+    - '${PWD}/src:/opt/imdbscrapper:ro'
+    - '${PWD}/storage:/opt/storage'
+    user: 1000:1000
     #ports:
     #  - '80:8080'
     #  - '443:8443'
-    volumes:
-    - '${PWD}/src:/opt/imdbscrapper:ro'
 
   #web:
   #  build: .
