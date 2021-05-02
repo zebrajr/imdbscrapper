@@ -7,12 +7,3 @@ services:
     - '${PWD}/src:/opt/imdbscrapper:ro'
     - '${PWD}/storage:/opt/storage'
     user: 1000:1000
-    #ports:
-    #  - '80:8080'
-    #  - '443:8443'
-
-  #web:
-  #  build: .
-  #  command: python manage.py runserver 0.0.0.0:8000
-  #  ports:
-  #    - "8000:8000"
