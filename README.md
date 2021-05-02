@@ -7,6 +7,9 @@ This search and notes would have to be done manually.
 
 
 ### Task
+Create a way to automatically index entries from movies (IMDB), so they can be searched and filtered afterwards via common software (Spreadsheet)
+
+### Action
 - With Docker
 
 ```sh
