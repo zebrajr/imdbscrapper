@@ -1,5 +1,5 @@
 # imdbscrapper
-Scrapper to get movies information from IMDB.
+Scrapper to get movies information from IMDB, indexing it into movies and shows, with rating, release date, and a few more information.
 
 ### Situation
 Finding movies / shows to watch, based on ratings and release date.
@@ -10,12 +10,12 @@ This search and notes would have to be done manually.
 - With Docker
 
 ```sh
-docker build -t yourRepo/yourPackge:yourVersion .
+docker build -t yourUser/yourPackage:yourVersion .
 ```
 
 - Directly
 
-> Install the requirements described in requirements.txt (pip3 install -f requirements.txt)
+> Install the requirements described in requirements.txt (pip3 install -r requirements.txt)
 > Create the folder structure or edit the settings in the main script
 ```sh
 python3 scrapper.yml
