@@ -12,11 +12,12 @@ def cls():
 def main():
     cls()
     baseURL     = "https://www.imdb.com/title/tt"       # Base URL for each title
-    startURL    = 0                                     # Start Number
-    endURL      = 9999999                               # Ending Number
+    startURL    = 9999999                               # Start Number
+    endURL      = 0                                     # Ending Number
     debugLevel  = 40                                    # 20 will display Info messages, 40 errors
     logFile     = "/opt/storage/info.log"               # Log output
     counterFile = "/opt/storage/counter.txt"            # Which ID was last scanned
+    reCheckFile = "/opt/storage/recheck.txt"            # Which IDs to recheck
 
 
     table = []
@@ -26,7 +27,7 @@ def main():
         counter.close()
     except Exception as e:
         pass
-    for i in range(startURL, endURL):
+    for i in range(startURL, endURL, -1):
         logging.basicConfig(filename=logFile, level=logging.INFO)
         titleFixed = str(i).zfill(7)        # Adds leading zeros, so that it always has 7 digits
         url = baseURL + titleFixed + '/'    # String Joins every part of the URL
@@ -73,16 +74,22 @@ def main():
                 logging.info(row)
             f.close()
 
-            counter = open(counterFile, "w")
-            counter.write(str(i))
-            counter.close()
-
             print(row)      # Prints to the screen, in case the user is watching the Docker / software in foreground
         except Exception as e:
             # Writes to the log if an error is found
             errorMessage = titleFixed + " - " + str(e)
             logging.error(errorMessage)
-
+            # If the error is page not available, add to file (Perforance improvement on rechecks)
+            if("NoneType" in str(e)):
+                recheck = open(reCheckFile, "a")
+                recheckString = titleFixed + "\n"
+                recheck.write(recheckString)
+                recheck.close()
+        finally:
+            # Updates the Counter on file
+            counter = open(counterFile, "w")
+            counter.write(str(i))
+            counter.close()
 
 
 if __name__ == "__main__":
