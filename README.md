@@ -34,4 +34,4 @@ python3 scrapper.yml
 ### Note
 
 ### ToDo
-- Add Error Handling in case Internet goes is not available
+- Add Error Handling in case Internet is not available
