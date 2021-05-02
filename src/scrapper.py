@@ -20,6 +20,12 @@ def main():
 
 
     table = []
+    try:
+        counter = open(counterFile, "r")
+        startURL = int(counter.read())
+        counter.close()
+    except Exception as e:
+        pass
     for i in range(startURL, endURL):
         logging.basicConfig(filename=logFile, level=logging.INFO)
         titleFixed = str(i).zfill(7)        # Adds leading zeros, so that it always has 7 digits
@@ -39,14 +45,23 @@ def main():
 
             # Gets the desired values from the JSON response
             row.append(data['name'])
-            row.append(data['description'])
+            try:
+                row.append(data['description'])
+            except Exception as e:
+                row.append("Description unavailable")
             row.append(url)
-            row.append(data['genre'])
-            row.append(data['aggregateRating']['ratingValue'])
+            try:
+                row.append(data['genre'])
+            except Exception as e:
+                row.append("Genre Unknown")
+            try:
+                row.append(data['aggregateRating']['ratingValue'])
+            except Exception as e:
+                row.append("No Rating")
             try:
                 row.append(data['datePublished'])
             except Exception as e:
-                pass
+                row.append("Unknown")
             # Opens, writes and closes the file with the information of the movie / series
             write = csv.writer(f)
             write.writerow(row)
@@ -54,6 +69,9 @@ def main():
                 logging.info(row)
             f.close()
 
+            counter = open(counterFile, "w")
+            counter.write(str(i))
+            counter.close()
 
             print(row)      # Prints to the screen, in case the user is watching the Docker / software in foreground
         except Exception as e:
