@@ -59,6 +59,10 @@ def main():
             except Exception as e:
                 row.append("No Rating")
             try:
+                row.append(data['aggregateRating']['ratingCount'])
+            except Exception as e:
+                row.append("Total Rating Count N/A")
+            try:
                 row.append(data['datePublished'])
             except Exception as e:
                 row.append("Unknown")
