@@ -80,7 +80,7 @@ def imdbscrapper(startURL, endURL):
             # Gets the desired values from the JSON response
             dataRow.append(data['name'])
             try:
-                dataRow.append(data['description'])
+                dataRow.append(str(data['description']).replace(';', ''))
             except Exception as e:
                 dataRow.append("Description unavailable")
             dataRow.append(url)
