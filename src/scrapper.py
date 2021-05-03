@@ -142,8 +142,8 @@ def main():
         # For each process, calculate the starting and ending number, and start a process with those values
         for i in range(nrProcesses):
             print("%s :: Process: %s - Starting: %s - Ending: %s" % (datetime.datetime.now(), i, currentStartURL, currentEndURL))
-            if(currentEndURL < 0):
-                currentEndURL = 0
+            if(currentEndURL < endURL):
+                currentEndURL = endURL
             processes.append(Process(target=imdbscrapper,args=(currentStartURL, currentEndURL)))
             currentStartURL -= stepUpProcess
             currentEndURL   -= stepUpProcess
