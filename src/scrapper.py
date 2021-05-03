@@ -4,24 +4,32 @@ import json
 import requests
 import csv
 import logging
+from threading import Thread
 from bs4 import BeautifulSoup
 
 def cls():
     os.system('cls' if os.name=='nt' else 'clear')
 
-def main():
-    cls()
-    baseURL     = "https://www.imdb.com/title/tt"       # Base URL for each title
-    startURL    = 9999999                               # Start Number
-    endURL      = 0                                     # Ending Number
-    debugLevel  = 40                                    # 20 will display Info messages, 40 errors
-    logFile     = "/opt/storage/info.log"               # Log output
-    counterFile = "/opt/storage/counter.txt"            # Which ID was last scanned
-    reCheckFile = "/opt/storage/recheck.txt"            # Which IDs to recheck
+def imdbscrapper(i):
+    cpuCount        = int(os.cpu_count()) - 1
+    baseURL         = "https://www.imdb.com/title/tt"       # Base URL for each title
+    startURL        = 9999999                               # Start Number
+    endURL          = 0                                     # Ending Number
+    debugLevel      = 40                                    # 20 will display Info messages, 40 errors
+    logFile         = "/opt/storage/info.log"               # Log output
+    counterFileBase = "/opt/storage/counter"            # Base for the counter file
+    counterFileExt  = ".txt"
+    #counterFile     = "/opt/storage/counter.txt"            # Which ID was last scanned
+    reCheckFile     = "/opt/storage/recheck.txt"            # Which IDs to recheck
 
 
-    table = []
+    startURL = int((startURL/cpuCount)*i)
+    endURL = int(i*(startURL/cpuCount)+1)
+
+
     try:
+        # Tries to read the value to continue from counterN.txt. On error defaults to StartURL
+        counterFile = counterFileBase + str(i) + counterFileExt
         counter = open(counterFile, "r")
         startURL = int(counter.read())
         counter.close()
@@ -90,6 +98,23 @@ def main():
             counter = open(counterFile, "w")
             counter.write(str(i))
             counter.close()
+
+def main():
+    cls()
+    # Comment in/out if you want 90% or full performance (not implemented)
+    cpuCount        = int(os.cpu_count()) - 1
+    #cpuCount        = 4
+
+    threads = []
+    for i in range(cpuCount):
+        print(i)
+        threads.append(Thread(target=imdbscrapper(i)))
+
+    for thread in threads:
+        thread.start()
+
+    for thread in threads:
+        thread.join()
 
 
 if __name__ == "__main__":
