@@ -10,6 +10,9 @@ This search and notes would have to be done manually.
 Create a way to automatically index entries from movies (IMDB), so they can be searched and filtered afterwards via common software (Spreadsheet)
 
 ### Action
+- Just the scrap data
+[IMDBScrap](https://github.com/zebrajr/imdbscrap)
+
 - With Docker
 
 ```sh
