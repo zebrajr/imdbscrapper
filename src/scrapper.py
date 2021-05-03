@@ -124,10 +124,10 @@ def imdbscrapper(startURL, endURL):
 
 def main():
     cls()
-    nrProcesses     = 5                                 # Number of Processes to start in parallel
-    startURL        = 10000                             # Starting Number
-    endURL          = 0                                 # Ending Number
-    stepUpCycle     = 100                               # How many numbers will be checked in each cycle
+    nrProcesses     = int(os.getenv('PROCESSES', 5))         # Number of Processes to start in parallel
+    startURL        = int(os.getenv('START_URL', 10000000))  # Starting Number
+    endURL          = int(os.getenv('END_URL', 0))           # Ending Number
+    stepUpCycle     = int(os.getenv('STEPUPCYCLE', 100))     # How many numbers will be checked in each cycle
     stepUpProcess   = int(stepUpCycle / nrProcesses)    # Divides the numbers to be checked in each cycle by the total number of processes
                                                         # Eg: 5 Processes running each cycle. 100 Numbers each cycle. 20 Numbers per process
 
