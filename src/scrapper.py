@@ -19,6 +19,7 @@ def saveToFile(dataTable, dataPath):
     sucessTest = False
     while sucessTest != True:
         # Try to open the file and append to it
+        # [ToDo:] change try position to fix duplicate entries
         try:
             f = open(dataPath, "a")
             for row in dataTable:
