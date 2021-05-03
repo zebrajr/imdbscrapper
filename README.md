@@ -37,6 +37,7 @@ python3 scrapper.yml
 ### Note
 
 ### ToDo
+- Dont input duplicates into dataTable
 - Add Error Handling in case Internet is not available
 - Add possibility to re-index failed entries (to go though the indexer faster when a new movie/show is added)
 - Add Multithreading
