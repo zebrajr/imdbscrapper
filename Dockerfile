@@ -6,6 +6,6 @@ WORKDIR /opt/imdbscrapper
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY src/ .
+COPY src/scrapper/ .
 
 CMD ["python", "-u", "/opt/imdbscrapper/scrapper.py"]

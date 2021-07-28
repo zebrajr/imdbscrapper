@@ -5,6 +5,7 @@ import json
 import requests
 import csv
 import logging
+import mysql.connector
 from multiprocessing import Process
 from bs4 import BeautifulSoup
 

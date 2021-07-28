@@ -5,10 +5,34 @@ services:
     image: zebrajr/imdbscrapper:latest
     volumes:
     #- '${PWD}/src:/opt/imdbscrapper:ro'
-    - '${PWD}/storage:/opt/storage'
+    - './src/scrapper/:/opt/imdbscrapper'
     user: 1000:1000
     environment:
-      - START_URL=1000
-      - END_URL=0
+      - START_URL=600000
+      - END_URL=450000
       - STEPUPCYCLE=100
-      - PROCESSES=5
+      - PROCESSES=10
+    depends_on:
+      - imdbdb
+
+
+  imdbdb:
+    container_name: imdbdb
+    image: mariadb:10.6
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+    volumes:
+      - "./storage/back/:/var/lib/mysql"
+
+
+  phpmyadmin:
+    container_name: imdbphpmyadmin
+    image: phpmyadmin/phpmyadmin:5.0.1
+    restart: unless-stopped
+    environment:
+      PMA_HOST: imdbdb
+      PMA_USER: root
+      PMA_PASSWORD: secret
+    ports:
+      - "1239:80"
