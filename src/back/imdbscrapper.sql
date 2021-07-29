@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: imdbdb
--- Generation Time: Jul 29, 2021 at 04:57 PM
+-- Generation Time: Jul 29, 2021 at 06:24 PM
 -- Server version: 10.6.3-MariaDB-1:10.6.3+maria~focal
 -- PHP Version: 7.4.1
 
@@ -40,6 +40,12 @@ CREATE DEFINER=`root`@`%` PROCEDURE `checkDuplicateMovie` (IN `idCheck` BIGINT(2
     WHERE movies.idMovie = idCheck;
 END$$
 
+CREATE DEFINER=`root`@`%` PROCEDURE `checkDuplicateRecheck` (IN `idCheck` BIGINT(20))  BEGIN
+	SELECT recheck.idRecheck
+    FROM recheck
+    WHERE recheck.idRecheck = idCheck;
+END$$
+
 CREATE DEFINER=`root`@`%` PROCEDURE `checkDuplicateSerie` (IN `idCheck` BIGINT(20))  BEGIN
 	SELECT series.idSerie
     FROM series
@@ -64,10 +70,10 @@ CREATE DEFINER=`root`@`%` PROCEDURE `insertMovieGenre` (IN `idMovie` BIGINT(20),
     VALUES(idMovie, idGenre);
 END$$
 
-CREATE DEFINER=`root`@`%` PROCEDURE `insertRecheck` (`inNumber` BIGINT(20))  BEGIN
+CREATE DEFINER=`root`@`%` PROCEDURE `insertRecheck` (IN `inIDRecheck` BIGINT(20))  BEGIN
 	INSERT INTO recheck
-    (`number`)
-    VALUES(inNumber);
+    (`idRecheck`)
+    VALUES(inIDRecheck);
 END$$
 
 CREATE DEFINER=`root`@`%` PROCEDURE `insertSerie` (`idSerie` BIGINT(20), `name` VARCHAR(255), `description` LONGTEXT, `imdbURL` VARCHAR(255), `rating` DOUBLE, `ratingCount` BIGINT(20), `releaseDate` DATE)  BEGIN
@@ -141,8 +147,7 @@ CREATE TABLE `moviesGenre` (
 --
 
 CREATE TABLE `recheck` (
-  `id` bigint(20) NOT NULL,
-  `number` bigint(20) NOT NULL
+  `idRecheck` bigint(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -199,7 +204,7 @@ ALTER TABLE `moviesGenre`
 -- Indexes for table `recheck`
 --
 ALTER TABLE `recheck`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`idRecheck`);
 
 --
 -- Indexes for table `series`
@@ -227,12 +232,6 @@ ALTER TABLE `movies`
 -- AUTO_INCREMENT for table `moviesGenre`
 --
 ALTER TABLE `moviesGenre`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `recheck`
---
-ALTER TABLE `recheck`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
