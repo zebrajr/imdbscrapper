@@ -168,14 +168,7 @@ def imdbscrapper(startURL, endURL):
                     testNext = False
                     print ("Did we just got 503ed? Waiting 60...")
                     sleep(60)
-                # [TODO] Page 404 not implemented
-                # If Error 404 is found
-                '''
-                if len(soup.findAll(text=re.compile('The requested URL was not found on our server.'))) > 0:
-                    #print("Saving to Recheck")
-                    saveRecheckToDatabase(titleFixed)
-                    continue
-                '''
+
 
                 data = json.loads(soup.find('script', type='application/ld+json').string)
 
@@ -214,7 +207,6 @@ def imdbscrapper(startURL, endURL):
                 if(data['@type'] == 'TVSeries'):
                     serieTable.append(dataRow)
             except Exception as e:
-                print(e)
                 # Prepares the error string, then append the error list to the list of lists of errors
                 #errorMessage = titleFixed + " - " + str(e)
                 #errorRow.append(errorMessage)
@@ -222,9 +214,12 @@ def imdbscrapper(startURL, endURL):
                 # If the error is page not available, append to reCheck list (Performance improvement on rechecks)
 
                 if("NoneType" in str(e)):
-                    testNext = False
-                    print ("Uncaught Error? Waiting 10")
-                    sleep(10)
+                    # [TODO] Page 404 not implemented
+                    # If Error 404 is found
+                    saveRecheckToDatabase(titleFixed)
+                    #testNext = False
+                    #print ("Uncaught Error? Waiting 10")
+                    #sleep(10)
                     #recheckString = titleFixed + "\n"
                     #reCheckRow.append(recheckString)
                     #reCheckTable.append(reCheckRow)
