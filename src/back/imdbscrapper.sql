@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: imdbdb
--- Generation Time: Jul 29, 2021 at 02:26 PM
+-- Generation Time: Jul 29, 2021 at 04:57 PM
 -- Server version: 10.6.3-MariaDB-1:10.6.3+maria~focal
 -- PHP Version: 7.4.1
 
@@ -28,6 +28,30 @@ DELIMITER $$
 --
 -- Procedures
 --
+CREATE DEFINER=`root`@`%` PROCEDURE `checkDuplicateIgnore` (IN `idCheck` BIGINT(20))  BEGIN
+	SELECT ignoreList.idIgnore
+    FROM ignoreList
+    WHERE ignoreList.idIgnore = idCheck;
+END$$
+
+CREATE DEFINER=`root`@`%` PROCEDURE `checkDuplicateMovie` (IN `idCheck` BIGINT(20))  BEGIN
+	SELECT movies.idMovie
+    FROM movies
+    WHERE movies.idMovie = idCheck;
+END$$
+
+CREATE DEFINER=`root`@`%` PROCEDURE `checkDuplicateSerie` (IN `idCheck` BIGINT(20))  BEGIN
+	SELECT series.idSerie
+    FROM series
+    WHERE series.idSerie = idCheck;
+END$$
+
+CREATE DEFINER=`root`@`%` PROCEDURE `insertIgnore` (IN `inIDIgnore` BIGINT(20))  BEGIN
+	INSERT INTO ignoreList
+    (`idIgnore`)
+    VALUES(inIDIgnore);
+END$$
+
 CREATE DEFINER=`root`@`%` PROCEDURE `insertMovie` (`idMovie` BIGINT(20), `name` VARCHAR(255), `description` LONGTEXT, `imdbURL` VARCHAR(255), `rating` DOUBLE, `ratingCount` BIGINT(20), `releaseDate` DATE)  BEGIN
 	INSERT INTO movies
     (`idmovie`, `name`, `description`, `imdbURL`, `rating`, `ratingCount`, `releaseDate`)
@@ -75,13 +99,11 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Table structure for table `genres`
+-- Table structure for table `ignoreList`
 --
 
-CREATE TABLE `genres` (
-  `id` bigint(20) NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `description` longtext DEFAULT NULL
+CREATE TABLE `ignoreList` (
+  `idIgnore` bigint(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -156,10 +178,10 @@ CREATE TABLE `seriesGenre` (
 --
 
 --
--- Indexes for table `genres`
+-- Indexes for table `ignoreList`
 --
-ALTER TABLE `genres`
-  ADD PRIMARY KEY (`id`);
+ALTER TABLE `ignoreList`
+  ADD PRIMARY KEY (`idIgnore`);
 
 --
 -- Indexes for table `movies`
@@ -194,12 +216,6 @@ ALTER TABLE `seriesGenre`
 --
 -- AUTO_INCREMENT for dumped tables
 --
-
---
--- AUTO_INCREMENT for table `genres`
---
-ALTER TABLE `genres`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `movies`

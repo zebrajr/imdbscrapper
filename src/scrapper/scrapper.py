@@ -1,5 +1,6 @@
 import os
 import time
+from time import sleep
 import datetime
 import json
 import requests
@@ -8,6 +9,16 @@ import logging
 import mysql.connector as mariadb
 from multiprocessing import Process
 from bs4 import BeautifulSoup
+
+# Creates and returns a mariadb connection object
+def createDBConnection():
+    mydb = mariadb.connect(
+        host = 'imdbdb',
+        user = 'root',
+        password = 'secret',
+        database = 'imdbscrapper'
+    )
+    return mydb
 
 def cls():
     os.system('cls' if os.name=='nt' else 'clear')
@@ -39,47 +50,48 @@ def saveToFile(dataTable, dataPath):
         except Exception as e:
             print("Retrying updating - %s - %s" % (dataPath, e))
 
+'''
+    Function to check for duplicate entries in the database
+    If found will return False
+'''
 def checkForDuplicate(idCheck):
-    mydb = createDBConnection()
-    cursor = mydb.cursor(buffered=True)
-    # [TODO] Should be changed to one procedure call only
-    cursor.callproc('checkDuplicateMovie', [idCheck,])
-    for results in cursor.stored_results():
-        result = results.fetchall()
-    commitDBConnection(mydb)
-    if len(result) > 0:
-        return False
+    tablesToCheck = ['checkDuplicateMovie', 'checkDuplicateSerie', 'checkDuplicateIgnore', 'checkDuplicateRecheck']
+    for table in tablesToCheck:
+        mydb = createDBConnection()
+        cursor = mydb.cursor(buffered=True)
+        cursor.callproc(table, [idCheck,])
+        for results in cursor.stored_results():
+            result = results.fetchall()
+        commitDBConnection(mydb)
+        if len(result) > 0:
+            return False
 
 
-# Creates and returns a mariadb connection object
-def createDBConnection():
-    mydb = mariadb.connect(
-        host = 'imdbdb',
-        user = 'root',
-        password = 'secret',
-        database = 'imdbscrapper'
-    )
-    return mydb
 
 def commitDBConnection(database):
     database.commit()
     database.close()
 
+def saveIgnoreToDatabase(idIgnore):
+    mydb = createDBConnection()
+    cursor = mydb.cursor(buffered=True)
+    cursor.callproc('insertIgnore', [idIgnore,])
+    commitDBConnection(mydb)
 
+def saveRecheckToDatabase(idRecheck):
+    mydb = createDBConnection()
+    cursor = mydb.cursor(buffered=True)
+    cursor.callproc('insertRecheck', [idRecheck,])
+    commitDBConnection(mydb)
+
+
+'''
+    Function to save to the database
+'''
 def saveToDatabase(dataTable, inTable):
     # [TODO] Change to dynamic values from docker-compose.yml
     mydb = createDBConnection()
     cursor = mydb.cursor(buffered=True)
-
-    # row[0] idMovie
-    # row[1] name
-    # row[2] description
-    # row[3] url
-    # row[4] genres
-    # row[5] rating
-    # row[6] ratingCount
-    # row[7] releaseDate
-
 
     # Defines which procedures to call
     if (inTable == 'movies'):
@@ -90,6 +102,7 @@ def saveToDatabase(dataTable, inTable):
         genreTable = 'insertSerieGenre'
 
     for row in dataTable:
+        print("Found %s" %(row[0]))
         cursor.callproc(mainTable, [row[0],row[1],row[2],row[3],row[5],row[6],row[7],])
         try:
             if len(row[4]) > 1:
@@ -127,70 +140,97 @@ def imdbscrapper(startURL, endURL):
     # Go in descending order from startURL to endURL
     for i in range(startURL, endURL, -1):
         #logging.basicConfig(filename=logFile, level=logging.INFO)
-        titleFixed = str(i).zfill(7)               # Adds leading zeros, so that it always has 7 digits
+        titleFixed = str(i).zfill(9)               # Adds leading zeros, so that it always has 7 digits
         url        = baseURL + titleFixed + '/'    # String Joins every part of the URL
         dataRow    = []                            # Initializes the dataRow list
         errorRow   = []                            # Initializes the errorRow list
         reCheckRow = []                            # Initializes the reCheckRow list
 
         # Assume Non Duplicate
-        duplicateTest = True
+        testDuplicate = True
         # Test for Duplicate
-        duplicateTest = checkForDuplicate(titleFixed)
+        testDuplicate = checkForDuplicate(titleFixed)
 
         # If a duplicate is found, skip number
-        if duplicateTest is False:
+        if testDuplicate is False:
             continue
-        try:
-            dataRow.append(titleFixed)
-            # Requests, parses and loads into JSON the HTML response
-            html = requests.get(url).text
-            soup = BeautifulSoup(html, 'html.parser')
-            data = json.loads(soup.find('script', type='application/ld+json').string)
+        # While made to wait if 503 code is received (too many requests)
+        testNext = False
+        while testNext == False:
+            try:
+                testNext = True
+                dataRow.append(titleFixed)
+                # Requests, parses and loads into JSON the HTML response
+                html = requests.get(url).text
+                soup = BeautifulSoup(html, 'html.parser')
+                # If Error 503 is found
+                if len(soup.findAll(text='Error 503')) > 0:
+                    testNext = False
+                    print ("Did we just got 503ed? Waiting 60...")
+                    sleep(60)
+                # [TODO] Page 404 not implemented
+                # If Error 404 is found
+                '''
+                if len(soup.findAll(text=re.compile('The requested URL was not found on our server.'))) > 0:
+                    #print("Saving to Recheck")
+                    saveRecheckToDatabase(titleFixed)
+                    continue
+                '''
 
-            # If the response is a TVEpisode, just skip the number altogether
-            if(data['@type'] == 'TVEpisode'):
-                continue
+                data = json.loads(soup.find('script', type='application/ld+json').string)
 
-            # Gets the desired values from the JSON response
-            dataRow.append(data['name'])
-            try:
-                dataRow.append(str(data['description']).replace(';', ''))
-            except Exception as e:
-                dataRow.append("Description unavailable")
-            dataRow.append(url)
-            try:
-                dataRow.append(data['genre'])
-            except Exception as e:
-                dataRow.append(0)
-            try:
-                dataRow.append(data['aggregateRating']['ratingValue'])
-            except Exception as e:
-                dataRow.append(0)
-            try:
-                dataRow.append(data['aggregateRating']['ratingCount'])
-            except Exception as e:
-                dataRow.append(0)
-            try:
-                dataRow.append(data['datePublished'])
-            except Exception as e:
-                dataRow.append('1000-01-01')
+                # If the response is a TVEpisode, just skip the number altogether
+                if(data['@type'] == 'TVEpisode'):
+                    saveIgnoreToDatabase(titleFixed)
+                    continue
 
-            # Checks if its a movie or a serie/show, and append the list to the list of lists
-            if(data['@type'] == 'Movie'):
-                movieTable.append(dataRow)
-            if(data['@type'] == 'TVSeries'):
-                serieTable.append(dataRow)
-        except Exception as e:
-            # Prepares the error string, then append the error list to the list of lists of errors
-            errorMessage = titleFixed + " - " + str(e)
-            errorRow.append(errorMessage)
-            errorTable.append(errorRow)
-            # If the error is page not available, append to reCheck list (Performance improvement on rechecks)
-            if("NoneType" in str(e)):
-                recheckString = titleFixed + "\n"
-                reCheckRow.append(recheckString)
-                reCheckTable.append(reCheckRow)
+                # Gets the desired values from the JSON response
+                dataRow.append(data['name'])
+                try:
+                    dataRow.append(str(data['description']).replace(';', ''))
+                except Exception as e:
+                    dataRow.append("Description unavailable")
+                dataRow.append(url)
+                try:
+                    dataRow.append(data['genre'])
+                except Exception as e:
+                    dataRow.append(0)
+                try:
+                    dataRow.append(data['aggregateRating']['ratingValue'])
+                except Exception as e:
+                    dataRow.append(0)
+                try:
+                    dataRow.append(data['aggregateRating']['ratingCount'])
+                except Exception as e:
+                    dataRow.append(0)
+                try:
+                    dataRow.append(data['datePublished'])
+                except Exception as e:
+                    dataRow.append('1000-01-01')
+
+                # Checks if its a movie or a serie/show, and append the list to the list of lists
+                if(data['@type'] == 'Movie'):
+                    movieTable.append(dataRow)
+                if(data['@type'] == 'TVSeries'):
+                    serieTable.append(dataRow)
+            except Exception as e:
+                print(e)
+                # Prepares the error string, then append the error list to the list of lists of errors
+                #errorMessage = titleFixed + " - " + str(e)
+                #errorRow.append(errorMessage)
+                #errorTable.append(errorRow)
+                # If the error is page not available, append to reCheck list (Performance improvement on rechecks)
+
+                if("NoneType" in str(e)):
+                    testNext = False
+                    print ("Uncaught Error? Waiting 10")
+                    sleep(10)
+                    #recheckString = titleFixed + "\n"
+                    #reCheckRow.append(recheckString)
+                    #reCheckTable.append(reCheckRow)
+
+
+
     # Writes the list of lists to each correct file
     #saveToFile(movieTable, moviesFile)
     #saveToFile(serieTable, seriesFile)
@@ -202,7 +242,8 @@ def imdbscrapper(startURL, endURL):
 def main():
     cls()
 
-    #imdbscrapper(903747,903743)
+    #imdbscrapper(903747,903733)
+
 
     nrProcesses     = int(os.getenv('PROCESSES', 5))         # Number of Processes to start in parallel
     startURL        = int(os.getenv('START_URL', 10000000))  # Starting Number

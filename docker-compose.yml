@@ -8,10 +8,10 @@ services:
     - './src/scrapper/:/opt/imdbscrapper'
     user: 1000:1000
     environment:
-      - START_URL=600000
-      - END_URL=450000
-      - STEPUPCYCLE=100
-      - PROCESSES=10
+      - START_URL=903747
+      - END_URL=0
+      - STEPUPCYCLE=50
+      - PROCESSES=5
     depends_on:
       - imdbdb
 
