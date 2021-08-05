@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: imdbdb
--- Generation Time: Jul 29, 2021 at 06:24 PM
+-- Generation Time: Aug 05, 2021 at 11:13 PM
 -- Server version: 10.6.3-MariaDB-1:10.6.3+maria~focal
 -- PHP Version: 7.4.1
 
@@ -52,6 +52,50 @@ CREATE DEFINER=`root`@`%` PROCEDURE `checkDuplicateSerie` (IN `idCheck` BIGINT(2
     WHERE series.idSerie = idCheck;
 END$$
 
+CREATE DEFINER=`root`@`%` PROCEDURE `getDuplicateMovies` ()  BEGIN
+	SELECT movies.idMovie, movies.name
+    FROM movies
+    GROUP BY movies.name
+    HAVING COUNT(movies.name) > 1;
+END$$
+
+CREATE DEFINER=`root`@`%` PROCEDURE `getDuplicateSeries` ()  BEGIN
+	SELECT series.idSerie, series.name
+    FROM series
+    GROUP BY series.name
+    HAVING COUNT(series.name) > 1;
+END$$
+
+CREATE DEFINER=`root`@`%` PROCEDURE `getMovieByName` (IN `movieName` VARCHAR(255))  BEGIN
+	SELECT movies.idMovie, movies.name, movies.description, movies.imdbURL, movies.rating, movies.ratingCount, movies.releaseDate
+    FROM movies
+    WHERE movies.name = movieName;
+END$$
+
+CREATE DEFINER=`root`@`%` PROCEDURE `getMovies` (IN `valueRating` DOUBLE, IN `valueRatingCount` BIGINT(20), IN `valueReleaseDate` DATE)  BEGIN
+		SELECT movies.idMovie, movies.name, movies.description, movies.imdbURL, movies.rating, movies.ratingCount, movies.releaseDate
+    FROM movies
+    WHERE movies.rating >= valueRating
+    AND movies.ratingCount >= valueRatingCount
+    AND movies.releaseDate  >= valueReleaseDate
+    ORDER by movies.rating DESC, movies.ratingCount DESC;
+END$$
+
+CREATE DEFINER=`root`@`%` PROCEDURE `getSerieByName` (IN `serieName` VARCHAR(255))  BEGIN
+	SELECT series.idSerie, series.name, series.description, series.imdbURL, series.rating, series.ratingCount, series.releaseDate
+    FROM series
+    WHERE series.name = serieName;
+END$$
+
+CREATE DEFINER=`root`@`%` PROCEDURE `getSeries` (IN `valueRating` DOUBLE, IN `valueRatingCount` BIGINT(20), IN `valueReleaseDate` DATE)  BEGIN
+	SELECT series.idSerie, series.name, series.description, series.imdbURL, series.rating, series.ratingCount, series.releaseDate
+    FROM series
+    WHERE series.rating >= valueRating
+    AND series.ratingCount >= valueRatingCount
+    AND series.releaseDate  >= valueReleaseDate
+    ORDER by series.rating DESC, series.ratingCount DESC;
+END$$
+
 CREATE DEFINER=`root`@`%` PROCEDURE `insertIgnore` (IN `inIDIgnore` BIGINT(20))  BEGIN
 	INSERT INTO ignoreList
     (`idIgnore`)
@@ -88,19 +132,55 @@ CREATE DEFINER=`root`@`%` PROCEDURE `insertSerieGenre` (IN `idSerie` BIGINT(20),
     VALUES(idSerie, idGenre);
 END$$
 
-CREATE DEFINER=`root`@`%` PROCEDURE `retrieveMovieByName` (`movieName` VARCHAR(255))  BEGIN
-	SELECT movies.idMovie, movies.name, movies.description, movies.imdbURL, movies.rating, movies.ratingCount, movies.releaseDate
-    FROM movies
-    WHERE movies.name = movieName;
+CREATE DEFINER=`root`@`%` PROCEDURE `removeDuplicateMovie` (IN `inMovie` BIGINT(20), IN `inName` VARCHAR(255))  BEGIN
+	DELETE FROM movies
+    WHERE movies.idMovie = inMovie;
+    DELETE FROM moviesGenre
+    WHERE moviesGenre.idMovie = inMovie;
+    INSERT INTO duplicateMovies
+    (duplicateMovies.idMovie, duplicateMovies.nameMovie)
+    VALUES (inMovie, inName);
+    INSERT INTO ignoreList
+    (ignoreList.idIgnore)
+    VALUES (inMovie);
 END$$
 
-CREATE DEFINER=`root`@`%` PROCEDURE `retrieveSerieByName` (`serieName` VARCHAR(255))  BEGIN
-	SELECT series.idSerie, series.name, series.description, series.imdbURL, series.rating, series.ratingCount, series.releaseDate
-    FROM series
-    WHERE series.name = serieName;
+CREATE DEFINER=`root`@`%` PROCEDURE `removeDuplicateSerie` (IN `inSerie` BIGINT(20), IN `inName` VARCHAR(255))  BEGIN
+	DELETE FROM series
+    WHERE series.idSerie = inSerie;
+    DELETE FROM seriesGenre
+    WHERE seriesGenre.idSerie = inSerie;
+    INSERT INTO duplicateSeries
+    (duplicateSeries.idSerie, duplicateSeries.nameSerie)
+    VALUES (inSerie, inName);
+    INSERT INTO ignoreList
+    (ignoreList.idIgnore)
+    VALUES (inSerie);
 END$$
 
 DELIMITER ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `duplicateMovies`
+--
+
+CREATE TABLE `duplicateMovies` (
+  `idMovie` bigint(20) NOT NULL,
+  `nameMovie` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `duplicateSeries`
+--
+
+CREATE TABLE `duplicateSeries` (
+  `idSerie` bigint(20) NOT NULL,
+  `nameSerie` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
 
@@ -181,6 +261,18 @@ CREATE TABLE `seriesGenre` (
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `duplicateMovies`
+--
+ALTER TABLE `duplicateMovies`
+  ADD PRIMARY KEY (`idMovie`);
+
+--
+-- Indexes for table `duplicateSeries`
+--
+ALTER TABLE `duplicateSeries`
+  ADD PRIMARY KEY (`idSerie`);
 
 --
 -- Indexes for table `ignoreList`
