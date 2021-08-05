@@ -5,10 +5,11 @@ services:
     image: zebrajr/imdbscrapper:latest
     volumes:
     #- '${PWD}/src:/opt/imdbscrapper:ro'
-    - './src/scrapper/:/opt/imdbscrapper'
+    - './src/scrapper/:/opt/imdbscrapper:ro'
     user: 1000:1000
     environment:
-      - START_URL=910000
+      - removeDuplicates=1
+      - START_URL=2000000
       - END_URL=0
       - STEPUPCYCLE=50
       - PROCESSES=5
