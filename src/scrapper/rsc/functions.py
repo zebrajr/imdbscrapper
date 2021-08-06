@@ -1,5 +1,8 @@
 import mysql.connector as mariadb
+import requests
+import json
 from time import sleep
+from bs4 import BeautifulSoup
 
 
 # Creates and returns a mariadb connection object
@@ -176,6 +179,7 @@ def imdbscrapper(startURL, endURL):
         # If a duplicate is found, skip number
         if testDuplicate is False:
             continue
+
         # While made to wait if 503 code is received (too many requests)
         testNext = False
         while testNext == False:
@@ -228,7 +232,9 @@ def imdbscrapper(startURL, endURL):
                     movieTable.append(dataRow)
                 if(data['@type'] == 'TVSeries'):
                     serieTable.append(dataRow)
+
             except Exception as e:
+                print(e)
                 # Prepares the error string, then append the error list to the list of lists of errors
                 #errorMessage = titleFixed + " - " + str(e)
                 #errorRow.append(errorMessage)
@@ -245,6 +251,7 @@ def imdbscrapper(startURL, endURL):
                     #recheckString = titleFixed + "\n"
                     #reCheckRow.append(recheckString)
                     #reCheckTable.append(reCheckRow)
+                
 
 
 

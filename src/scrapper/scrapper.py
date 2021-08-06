@@ -1,14 +1,10 @@
+from time import sleep
+from multiprocessing import Process
 import os
 import time
-from time import sleep
 import datetime
-import json
-import requests
 import csv
 import logging
-import mysql.connector as mariadb
-from multiprocessing import Process
-from bs4 import BeautifulSoup
 import rsc.functions as scrapper
 import rsc.helper as helper
 
