@@ -41,3 +41,19 @@ python3 scrapper.yml
 - Add Error Handling in case Internet is not available
 - Add possibility to re-index failed entries (to go though the indexer faster when a new movie/show is added)
 - Add Multithreading
+
+
+
+Ps.: Feel free to improve :)
+
+
+## Some Statistics
+<img src="https://img.shields.io/github/license/zebrajr/imdbscrapper?logo=github"><img src="https://img.shields.io/github/forks/zebrajr/imdbscrapper?logo=github"><img src="https://img.shields.io/github/stars/zebrajr/imdbscrapper?logo=github">
+<br>
+<img src="https://img.shields.io/github/last-commit/zebrajr/imdbscrapper?logo=gitfs"><img src="https://img.shields.io/maintenance/yes/2021">
+<br>
+<img src="https://img.shields.io/github/repo-size/zebrajr/imdbscrapper?logo=files"><img src="https://img.shields.io/tokei/lines/github/zebrajr/imdbscrapper?logo=files">
+<br>
+<img src="https://img.shields.io/github/issues-raw/zebrajr/imdbscrapper?logo=gitbook"><img src="https://img.shields.io/github/issues-closed-raw/zebrajr/imdbscrapper?logo=gitbook">
+<br>
+<img src="https://img.shields.io/github/issues-pr-raw/zebrajr/imdbscrapper?logo=git"><img src="https://img.shields.io/github/issues-pr-closed-raw/zebrajr/imdbscrapper?logo=git">
